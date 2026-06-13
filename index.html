@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Room — Portfolio</title>
+<link rel="stylesheet" href="style.css?v=30">
+<script async src="https://ga.jspm.io/npm:es-module-shims@1.10.0/dist/es-module-shims.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+  <div id="loading">
+    <div class="loader-inner">
+      <div class="loader-bar"><div id="loader-fill"></div></div>
+      <p>loading the room…</p>
+    </div>
+  </div>
+
+  <canvas id="scene"></canvas>
+
+  <p id="hint">tap or click objects to explore · drag to look around</p>
+
+  <button id="daynight" aria-label="toggle day / night" title="day / night">
+    <svg id="icon-sun" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <circle cx="12" cy="12" r="4.5"/>
+      <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M19.4 4.6l-1.8 1.8M6.4 17.6l-1.8 1.8"/>
+    </svg>
+    <svg id="icon-moon" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none">
+      <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+    </svg>
+  </button>
+
+  <aside id="panel">
+    <button id="panel-close" aria-label="close">×</button>
+    <h2 id="panel-title"></h2>
+    <div id="panel-body"></div>
+  </aside>
+
+  <script type="module" src="main.js?v=30"></script>
+</body>
+</html>
