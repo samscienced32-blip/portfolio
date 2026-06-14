@@ -33,20 +33,6 @@ The project pairs offline rendering quality with real-time web performance:
 - **[Three.js](https://threejs.org/)** — real-time WebGL rendering
 - **[Blender](https://www.blender.org/)** — modeling and Cycles lighting, baked to texture atlases
 - **Vanilla HTML / CSS / JavaScript** — no build step required
-
----
-
-## Running Locally
-
-The site is static but uses ES modules and texture loading, so it must be served over HTTP (opening `index.html` directly will not work).
-
-```bash
-# from the project folder
-python -m http.server 8000
-```
-
-Then open **http://localhost:8000**. Use the sun/moon button (top-right) to toggle day and night, drag to orbit, scroll to zoom, and click objects to explore.
-
 ---
 
 ## Inspiration & Credits
@@ -56,4 +42,3 @@ Built by me, inspired by:
 - [sooahs-room-folio.com](https://www.sooahs-room-folio.com/) — for the concept of an explorable, isometric "room" portfolio
 - the wider community of interactive 3D portfolios that explore the browser as a creative space
 
-Made with [Three.js](https://threejs.org/) and [Blender](https://www.blender.org/).
