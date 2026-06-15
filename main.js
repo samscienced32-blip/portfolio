@@ -541,12 +541,15 @@ if (isMobile) {
   }
   document.body.appendChild(bar);
 }
+// custom pin anchors (override the default "average of all meshes")
+const PIN_ANCHOR = { books: ['Books_Sideboard', 'Sideboard'] };  // education: on the sideboard books, centered + lower
 const _pv = new THREE.Vector3(), _pt = new THREE.Vector3();
 function updatePins() {
   for (const key in pinEls) {
-    const h = HOTSPOTS[key]; const el = pinEls[key];
+    const el = pinEls[key];
+    const anchors = PIN_ANCHOR[key] || HOTSPOTS[key].meshes;
     let n = 0; _pv.set(0, 0, 0);
-    for (const mn of h.meshes) { const mesh = meshByName[mn]; if (mesh) { mesh.getWorldPosition(_pt); _pv.add(_pt); n++; } }
+    for (const mn of anchors) { const mesh = meshByName[mn]; if (mesh) { mesh.getWorldPosition(_pt); _pv.add(_pt); n++; } }
     if (!n) { el.classList.add('hide'); continue; }
     _pv.multiplyScalar(1 / n);
     const p = _pv.clone().project(camera);
