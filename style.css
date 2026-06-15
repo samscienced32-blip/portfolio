@@ -206,3 +206,20 @@ body.night #panel-body a { color: #d9a85e; }
 body.night #lightbox.open { background: rgba(0,0,0,.72); }
 body.night .lb-card { background: #221d16; color: #e8ddc8; border-color: rgba(217,168,94,.5); }
 body.night .lb-card h3, body.night .lb-card .tl-date, body.night .lb-card a { color: #d9a85e; }
+
+/* ---------- persistent object labels (mobile) ---------- */
+.objlabel {
+  position: fixed; z-index: 12; pointer-events: none;
+  transform: translate(-50%, -135%);
+  padding: 4px 10px; border-radius: 13px;
+  background: rgba(247, 241, 230, .9); color: #3a2e22;
+  font-family: Georgia, serif; font-size: 12px; font-style: italic;
+  box-shadow: 0 2px 8px rgba(60, 40, 20, .28);
+  border: 1px solid rgba(185, 138, 78, .5);
+  white-space: nowrap; opacity: 0; transition: opacity .3s ease;
+}
+.objlabel.show { opacity: .9; }
+body.night .objlabel {
+  background: rgba(34, 29, 22, .9); color: #e8ddc8;
+  border-color: rgba(217, 168, 94, .5); box-shadow: 0 2px 8px rgba(0, 0, 0, .5);
+}

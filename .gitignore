@@ -1,0 +1,17 @@
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# editor / temp
+*.tmp
+*~
+.vscode/
+
+# preview/scratch images (not part of the site)
+*_check.png
+*_verify*.png
+full_room.png
+night_*.png
+embed_check.png
+reseat_check.png

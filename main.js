@@ -211,6 +211,8 @@ const scene = new THREE.Scene();
 const dayBg = new THREE.Color(0xb9b2a6), nightBg = new THREE.Color(0x282a2f);
 scene.background = dayBg.clone();
 
+const isMobile = matchMedia('(pointer: coarse)').matches || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+
 const camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.1, 60);
 camera.position.set(5.6, 3.4, -5.6); // open corner: blender (+x,+y) -> three (+x,-z)
 
@@ -225,6 +227,14 @@ controls.maxPolarAngle = 1.35;
 controls.minAzimuthAngle = 1.75;     // clamped to the open-corner quadrant
 controls.maxAzimuthAngle = 2.95;
 controls.enablePan = false;
+
+// mobile (Android/iOS): start further out so the whole room fits, wider lens
+if (isMobile) {
+  camera.fov = 37; camera.updateProjectionMatrix();
+  const t = controls.target;
+  camera.position.copy(t).add(camera.position.clone().sub(t).multiplyScalar(1.5));
+  controls.maxDistance = 15;
+}
 
 // ============================================================
 // LOADING (textures + glb)
@@ -491,14 +501,44 @@ addEventListener('pointermove', (e) => {
     hovered = k;
     if (k) glowTargets[k] = 1;
     canvas.style.cursor = k ? 'pointer' : 'grab';
-    if (k) { tip.textContent = HOTSPOTS[k].tip; tip.classList.add('show'); }
+    if (k && !isMobile) { tip.textContent = HOTSPOTS[k].tip; tip.classList.add('show'); }
     else tip.classList.remove('show');
   }
-  if (hovered) {
+  if (hovered && !isMobile) {
     tip.style.left = (e.clientX + 16) + 'px';
     tip.style.top  = (e.clientY - 34) + 'px';
   }
 });
+
+// persistent object labels (mobile only — no hover on touch)
+const LABELS = {
+  laptop: 'My Work', trophy: 'Achievements', books: 'Education',
+  rocket: 'Builds & Hobbies', box: 'About Me', publications: 'Research',
+  github: 'GitHub', linkedin: 'LinkedIn',
+};
+const labelEls = {};
+if (isMobile) {
+  for (const key in LABELS) {
+    const el = document.createElement('div');
+    el.className = 'objlabel'; el.textContent = LABELS[key];
+    document.body.appendChild(el); labelEls[key] = el;
+  }
+}
+const _lv = new THREE.Vector3(), _lt = new THREE.Vector3();
+function updateLabels() {
+  for (const key in labelEls) {
+    const h = HOTSPOTS[key]; const el = labelEls[key];
+    let n = 0; _lv.set(0, 0, 0);
+    for (const mn of h.meshes) { const mesh = meshByName[mn]; if (mesh) { mesh.getWorldPosition(_lt); _lv.add(_lt); n++; } }
+    if (!n) { el.classList.remove('show'); continue; }
+    _lv.multiplyScalar(1 / n);
+    const p = _lv.clone().project(camera);
+    if (p.z > 1 || p.x < -1 || p.x > 1 || p.y < -1 || p.y > 1) { el.classList.remove('show'); continue; }
+    el.style.left = ((p.x * 0.5 + 0.5) * innerWidth) + 'px';
+    el.style.top  = ((-p.y * 0.5 + 0.5) * innerHeight) + 'px';
+    el.classList.add('show');
+  }
+}
 
 const panel = document.getElementById('panel');
 addEventListener('click', (e) => {
@@ -565,8 +605,8 @@ document.getElementById('daynight').addEventListener('click', () => {
 // ============================================================
 let intro = null;
 function introAnim() {
-  const from = new THREE.Vector3(8.5, 5.6, -8.5);
   const to = camera.position.clone();
+  const from = controls.target.clone().add(to.clone().sub(controls.target).multiplyScalar(1.4));
   camera.position.copy(from);
   intro = { t: 0, from, to };
 }
@@ -644,6 +684,7 @@ function tick() {
     grassMat.uniforms.uTime.value = clock.elapsedTime;
   }
 
+  if (isMobile) updateLabels();
   controls.update();
   renderer.render(scene, camera);
   requestAnimationFrame(tick);
