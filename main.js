@@ -551,8 +551,8 @@ function updatePins() {
     _pv.multiplyScalar(1 / n);
     const p = _pv.clone().project(camera);
     if (p.z > 1 || p.x < -1 || p.x > 1 || p.y < -1 || p.y > 1) { el.classList.add('hide'); continue; }
-    el.style.left = ((p.x * 0.5 + 0.5) * innerWidth) + 'px';
-    el.style.top  = ((-p.y * 0.5 + 0.5) * innerHeight) + 'px';
+    const x = (p.x * 0.5 + 0.5) * innerWidth, y = (-p.y * 0.5 + 0.5) * innerHeight;
+    el.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`;
     el.classList.remove('hide');
   }
 }
@@ -704,9 +704,9 @@ function tick() {
     grassMat.uniforms.uTime.value = clock.elapsedTime;
   }
 
-  if (isMobile) updatePins();
   controls.update();
   renderer.render(scene, camera);
+  if (isMobile) updatePins();   // after render → projects with the exact rendered camera, no lag
   requestAnimationFrame(tick);
 }
 tick();

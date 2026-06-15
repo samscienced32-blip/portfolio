@@ -209,21 +209,21 @@ body.night .lb-card h3, body.night .lb-card .tl-date, body.night .lb-card a { co
 
 /* ---------- mobile: pulsing pins on objects ---------- */
 .pin {
-  position: fixed; z-index: 12; width: 40px; height: 40px;
-  transform: translate(-50%, -50%); cursor: pointer;
+  position: fixed; z-index: 12; left: 0; top: 0; width: 30px; height: 30px;
+  cursor: pointer; will-change: transform;
 }
-.pin::before {                       /* solid centre dot */
-  content: ''; position: absolute; inset: 14px; border-radius: 50%;
-  background: #f6e6a6; box-shadow: 0 0 8px rgba(255, 220, 120, .95);
+.pin::before {                       /* small solid centre dot */
+  content: ''; position: absolute; inset: 12.5px; border-radius: 50%;
+  background: #f6e6a6; box-shadow: 0 0 5px rgba(255, 220, 120, .9);
 }
-.pin::after {                        /* pulsing ring */
-  content: ''; position: absolute; inset: 11px; border-radius: 50%;
-  border: 2px solid rgba(255, 222, 130, .85);
-  animation: pinpulse 2.1s ease-out infinite;
+.pin::after {                        /* subtle pulsing ring */
+  content: ''; position: absolute; inset: 10px; border-radius: 50%;
+  border: 1.5px solid rgba(255, 222, 130, .8);
+  animation: pinpulse 2.2s ease-out infinite;
 }
 @keyframes pinpulse {
-  0%   { transform: scale(.55); opacity: .9; }
-  100% { transform: scale(2.0); opacity: 0; }
+  0%   { transform: scale(.6); opacity: .8; }
+  100% { transform: scale(1.7); opacity: 0; }
 }
 .pin.hide { display: none; }
 body.night .pin::before { background: #ffe79a; }
