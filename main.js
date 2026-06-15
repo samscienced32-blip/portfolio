@@ -228,12 +228,20 @@ controls.minAzimuthAngle = 1.75;     // clamped to the open-corner quadrant
 controls.maxAzimuthAngle = 2.95;
 controls.enablePan = false;
 
-// mobile (Android/iOS): start further out so the whole room fits, wider lens
+// mobile (Android/iOS): auto-fit the whole room into the (often portrait) screen
+function fitMobile() {
+  if (!isMobile) return;
+  const R = 3.4; // room + grass bounding radius
+  const vFov = camera.fov * Math.PI / 180;
+  const hFov = 2 * Math.atan(Math.tan(vFov / 2) * camera.aspect);
+  const dist = (R / Math.sin(Math.min(vFov, hFov) / 2)) * 1.06;
+  const dir = camera.position.clone().sub(controls.target).normalize();
+  camera.position.copy(controls.target).add(dir.multiplyScalar(dist));
+}
 if (isMobile) {
-  camera.fov = 37; camera.updateProjectionMatrix();
-  const t = controls.target;
-  camera.position.copy(t).add(camera.position.clone().sub(t).multiplyScalar(1.5));
-  controls.maxDistance = 15;
+  camera.fov = 38; camera.updateProjectionMatrix();
+  controls.maxDistance = 45;
+  fitMobile();
 }
 
 // ============================================================
@@ -510,48 +518,60 @@ addEventListener('pointermove', (e) => {
   }
 });
 
-// persistent object labels (mobile only — no hover on touch)
-const LABELS = {
-  laptop: 'My Work', trophy: 'Achievements', books: 'Education',
-  rocket: 'Builds & Hobbies', box: 'About Me', publications: 'Research',
-  github: 'GitHub', linkedin: 'LinkedIn',
-};
-const labelEls = {};
+// ---- mobile UX: pulsing pins on objects + bottom menu bar ----
+const MENU = [
+  ['box', 'About Me'], ['laptop', 'My Work'], ['books', 'Education'],
+  ['trophy', 'Achievements'], ['rocket', 'Builds & Hobbies'], ['publications', 'Research'],
+  ['github', 'GitHub'], ['linkedin', 'LinkedIn'],
+];
+const pinEls = {};
 if (isMobile) {
-  for (const key in LABELS) {
-    const el = document.createElement('div');
-    el.className = 'objlabel'; el.textContent = LABELS[key];
-    document.body.appendChild(el); labelEls[key] = el;
+  document.body.classList.add('mobile');
+  for (const [key] of MENU) {                       // pulsing pin per object
+    const el = document.createElement('div'); el.className = 'pin hide';
+    el.addEventListener('click', (e) => { e.stopPropagation(); openHotspot(key); });
+    document.body.appendChild(el); pinEls[key] = el;
   }
+  const bar = document.createElement('div'); bar.id = 'menubar';   // bottom menu bar
+  for (const [key, label] of MENU) {
+    const chip = document.createElement('button'); chip.className = 'menu-chip';
+    chip.textContent = label;
+    chip.addEventListener('click', (e) => { e.stopPropagation(); openHotspot(key); });
+    bar.appendChild(chip);
+  }
+  document.body.appendChild(bar);
 }
-const _lv = new THREE.Vector3(), _lt = new THREE.Vector3();
-function updateLabels() {
-  for (const key in labelEls) {
-    const h = HOTSPOTS[key]; const el = labelEls[key];
-    let n = 0; _lv.set(0, 0, 0);
-    for (const mn of h.meshes) { const mesh = meshByName[mn]; if (mesh) { mesh.getWorldPosition(_lt); _lv.add(_lt); n++; } }
-    if (!n) { el.classList.remove('show'); continue; }
-    _lv.multiplyScalar(1 / n);
-    const p = _lv.clone().project(camera);
-    if (p.z > 1 || p.x < -1 || p.x > 1 || p.y < -1 || p.y > 1) { el.classList.remove('show'); continue; }
+const _pv = new THREE.Vector3(), _pt = new THREE.Vector3();
+function updatePins() {
+  for (const key in pinEls) {
+    const h = HOTSPOTS[key]; const el = pinEls[key];
+    let n = 0; _pv.set(0, 0, 0);
+    for (const mn of h.meshes) { const mesh = meshByName[mn]; if (mesh) { mesh.getWorldPosition(_pt); _pv.add(_pt); n++; } }
+    if (!n) { el.classList.add('hide'); continue; }
+    _pv.multiplyScalar(1 / n);
+    const p = _pv.clone().project(camera);
+    if (p.z > 1 || p.x < -1 || p.x > 1 || p.y < -1 || p.y > 1) { el.classList.add('hide'); continue; }
     el.style.left = ((p.x * 0.5 + 0.5) * innerWidth) + 'px';
     el.style.top  = ((-p.y * 0.5 + 0.5) * innerHeight) + 'px';
-    el.classList.add('show');
+    el.classList.remove('hide');
   }
 }
 
 const panel = document.getElementById('panel');
+function openHotspot(k) {
+  if (!k) return;
+  if (HOTSPOTS[k].url) { window.open(HOTSPOTS[k].url, '_blank'); return; }
+  document.getElementById('panel-title').textContent = HOTSPOTS[k].title;
+  document.getElementById('panel-body').innerHTML = HOTSPOTS[k].body || '<p><em>(content coming soon)</em></p>';
+  panel.classList.add('open');
+  glowTargets[k] = 1; setTimeout(() => { if (hovered !== k) glowTargets[k] = 0; }, 1000);  // brief pulse
+}
 addEventListener('click', (e) => {
-  if (e.target.closest('#panel') || e.target.closest('#daynight') || e.target.closest('#lightbox')) return;
+  if (e.target.closest('#panel') || e.target.closest('#daynight') || e.target.closest('#lightbox') ||
+      e.target.closest('#menubar') || e.target.closest('.pin')) return;
   const k = pick(e);
-  if (k && HOTSPOTS[k].url) { window.open(HOTSPOTS[k].url, '_blank'); return; }
-  if (k) {
-    document.getElementById('panel-title').textContent = HOTSPOTS[k].title;
-    document.getElementById('panel-body').innerHTML = HOTSPOTS[k].body || '<p><em>(content coming soon)</em></p>';
-    panel.classList.add('open');
-  } else {
-    panel.classList.remove('open');
-  }
+  if (k) openHotspot(k);
+  else panel.classList.remove('open');
 });
 document.getElementById('panel-close').addEventListener('click', () => panel.classList.remove('open'));
 
@@ -684,7 +704,7 @@ function tick() {
     grassMat.uniforms.uTime.value = clock.elapsedTime;
   }
 
-  if (isMobile) updateLabels();
+  if (isMobile) updatePins();
   controls.update();
   renderer.render(scene, camera);
   requestAnimationFrame(tick);
