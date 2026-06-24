@@ -36,14 +36,6 @@ The project pairs offline rendering quality with real-time web performance:
 
 ---
 
-## Running Locally
-
-The site is static but uses ES modules and texture loading, so it must be served over HTTP (opening `index.html` directly will not work).
-
-```bash
-# from the project folder
-python -m http.server 8000
-```
 
 Then open **http://localhost:8000**. Use the sun/moon button (top-right) to toggle day and night, drag to orbit, scroll to zoom, and click objects to explore.
 
